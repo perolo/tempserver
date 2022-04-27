@@ -41,10 +41,12 @@ pipeline {
                         echo 'Running golangci-lint'
                         sh 'golangci-lint run --out-format junit-xml --config .golangci.yml > golangci-lint.xml'
                     }
-                    echo 'Running test'
-                    sh 'go test -v 2>&1 | go-junit-report > report.xml'
-                    echo 'Running coverage'
-                    sh 'gocov test ./... | gocov-xml > coverage.xml'
+                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'No Tests!') {
+                        echo 'Running test'
+                        sh 'go test -v 2>&1 | go-junit-report > report.xml'
+                        echo 'Running coverage'
+                        sh 'gocov test ./... | gocov-xml > coverage.xml'
+                    }
                 }
             }
         }
