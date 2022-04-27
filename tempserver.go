@@ -23,7 +23,7 @@ type Config struct {
 	DbFile   string `properties:"dbfile"`
 }
 
-func generateLineItems(name int, count int) []opts.LineData {
+func generateLineItems(name int, count int) []opts.LineData { //nolint:unparam
 	items := make([]opts.LineData, 0)
 
 //	items := make([]Reading, 0)
@@ -34,7 +34,7 @@ func generateLineItems(name int, count int) []opts.LineData {
 	lastid := 0
     for rows.Next() {
 		read := Reading{}
-		if err := rows.Scan( &read.Id); err != nil {
+		if err = rows.Scan( &read.Id); err != nil {
 			log.Fatalf("could not scan row: %v", err)
 		}
 		lastid = read.Id
@@ -47,7 +47,7 @@ func generateLineItems(name int, count int) []opts.LineData {
     for rows.Next() {
 		read := Reading{}
 		// create an instance of `Bird` and write the result of the current row into it
-		if err := rows.Scan( &read.Sensor, &read.Temperature); err != nil {
+		if err = rows.Scan( &read.Sensor, &read.Temperature); err != nil {
 			log.Fatalf("could not scan row: %v", err)
 		}
 		//fmt.Printf("found read: %+v\n", read)	
@@ -77,7 +77,8 @@ func httpserver(w http.ResponseWriter, _ *http.Request) {
 		AddSeries("28-7167221e64ff", generateLineItems(4,100)).
 		AddSeries("28-7167221e64ff", generateLineItems(5,100)).
 		SetSeriesOptions(charts.WithLineChartOpts(opts.LineChart{Smooth: true}))
-	line.Render(w)
+	err := line.Render(w)
+	Check(err)
 }
 
 func initdb() {
@@ -124,7 +125,8 @@ func returnLast(w http.ResponseWriter, r *http.Request){
 		items = append(items, read)
 	}
 
-    json.NewEncoder(w).Encode(items)
+    err = json.NewEncoder(w).Encode(items)
+	Check(err)
 }
 
 func getStart(w http.ResponseWriter, r *http.Request){
@@ -154,7 +156,8 @@ func getStart(w http.ResponseWriter, r *http.Request){
 		items = append(items, read)
 	}
 
-    json.NewEncoder(w).Encode(items)
+    err = json.NewEncoder(w).Encode(items)
+	Check(err)
 }
 
 func main() {
