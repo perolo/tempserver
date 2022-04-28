@@ -13,6 +13,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -25,8 +26,6 @@ type Config struct {
 
 func generateLineItems(name int, count int) []opts.LineData { //nolint:unparam
 	items := make([]opts.LineData, 0)
-
-	//	items := make([]Reading, 0)
 
 	rows, err := db.Query("SELECT Id FROM reading ORDER BY ID DESC LIMIT 1")
 	Check(err)
@@ -158,6 +157,10 @@ func getStart(w http.ResponseWriter, r *http.Request) {
 	err = json.NewEncoder(w).Encode(items)
 	Check(err)
 }
+func doQuit(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Endpoint Hit: doQuit")
+	os.Exit(0)
+}
 
 func main() {
 	propPtr := flag.String("prop", "tempserver.properties", "a string")
@@ -180,6 +183,7 @@ func main() {
 
 	myRouter.HandleFunc("/", httpserver)
 	myRouter.HandleFunc("/last", returnLast)
+	myRouter.HandleFunc("/quit", doQuit)
 	myRouter.HandleFunc("/start/{id}", getStart).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":8081", myRouter))
