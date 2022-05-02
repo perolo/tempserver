@@ -118,7 +118,7 @@ func returnLast(w http.ResponseWriter, r *http.Request) {
 		Check(err2)
 		read.TimeStamp = temp
 
-		fmt.Printf("found read: %+v + %s\n", read, timestring)
+		//fmt.Printf("found read: %+v + %s\n", read, timestring)
 		// append the current instance to the slice of birds
 		items = append(items, read)
 	}
@@ -149,7 +149,7 @@ func getStart(w http.ResponseWriter, r *http.Request) {
 		Check(err2)
 		read.TimeStamp = temp.Add(time.Hour * 2)
 
-		fmt.Printf("found read: %+v + %s\n", read, timestring)
+		//fmt.Printf("found read: %+v + %s\n", read, timestring)
 		// append the current instance to the slice of birds
 		items = append(items, read)
 	}
