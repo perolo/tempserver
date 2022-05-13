@@ -22,6 +22,14 @@ var cfg Config
 
 type Config struct {
 	DbFile string `properties:"dbfile"`
+	Port string `properties:"port"`
+}
+
+type Reading struct {
+	Id          int       `json:"id"`
+	Sensor      int       `json:"sensor"`
+	TimeStamp   time.Time `json:"timeStamp"`
+	Temperature float64   `json:"temperature"`
 }
 
 func generateLineItems(name int, count int) []opts.LineData { //nolint:unparam
@@ -83,13 +91,6 @@ func initdb() {
 	var err error
 	db, err = sql.Open("sqlite3", cfg.DbFile)
 	Check(err)
-}
-
-type Reading struct {
-	Id          int       `json:"id"`
-	Sensor      int       `json:"sensor"`
-	TimeStamp   time.Time `json:"timeStamp"`
-	Temperature float64   `json:"temperature"`
 }
 
 func Check(e error) {
@@ -186,5 +187,5 @@ func main() {
 	myRouter.HandleFunc("/quit", doQuit)
 	myRouter.HandleFunc("/start/{id}", getStart).Methods("GET")
 
-	log.Fatal(http.ListenAndServe(":8081", myRouter))
+	log.Fatal(http.ListenAndServe(":" + cfg.Port, myRouter))
 }
