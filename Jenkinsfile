@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        docker { image 'golang:1.18-stretch' }
+        docker { image 'yocreo/go-docker:latest' }
     }
     environment {
         GO114MODULE = 'on'
@@ -8,20 +8,10 @@ pipeline {
         GOPATH = "/go"
         HOME = "/home/perolo/Jenkins/workspace/${JOB_NAME}"
     }
+    options { 
+        buildDiscarder(logRotator(numToKeepStr: '10')) 
+    }    
     stages {        
-        stage('Pre Test') {
-            steps {
-                echo 'Installing dependencies'
-                sh 'env'
-                sh 'pwd'             
-                sh 'go version'
-                sh 'go install honnef.co/go/tools/cmd/staticcheck@latest'
-                sh 'go install github.com/jstemmer/go-junit-report@latest'
-                sh 'go install github.com/axw/gocov/gocov@latest'
-                sh 'go install github.com/AlekSi/gocov-xml@latest'
-                sh 'go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest'
-            }
-        }
         
         stage('Build') {
             steps {
@@ -49,17 +39,40 @@ pipeline {
                     }
                 }
             }
-        }
+        stage('Vulnerabilities') {
+            steps {
+                echo 'Vulnerabilities'
+                sh 'env'
+                sh 'pwd'             
+                sh 'go version'
+                sh 'nancy -V'
+                sh 'git --version'
+                sh '/usr/local/bin/nancy -V'
+                sh 'go list -json -m all | nancy sleuth'
+            }
+            }
         stage('Artifacts') {
             steps { 
                 script {
                     if (fileExists('report.xml')) {
                         archiveArtifacts artifacts: 'report.xml', fingerprint: true
+                        try {
                         junit 'report.xml'
+                        } catch (err) {
+                            echo err.getMessage()
+                            echo "Error detected, but we will continue."
+                            echo "No lint errors found is not an error."
+                        }
                     }
                     if (fileExists('coverage.xml')) {
+                        try {
                         archiveArtifacts artifacts: 'coverage.xml', fingerprint: true
                         cobertura coberturaReportFile: 'coverage.xml'
+                        } catch (err) {
+                            echo err.getMessage()
+                            echo "Error detected, but we will continue."
+                            echo "No lint errors found is not an error."
+                        }
                     }
                     if (fileExists('golangci-lint.xml')) {
                         archiveArtifacts artifacts: 'golangci-lint.xml'            
