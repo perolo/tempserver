@@ -39,6 +39,7 @@ pipeline {
                     }
                 }
             }
+        }
         stage('Vulnerabilities') {
             steps {
                 echo 'Vulnerabilities'
@@ -50,7 +51,7 @@ pipeline {
                 sh '/usr/local/bin/nancy -V'
                 sh 'go list -json -m all | nancy sleuth'
             }
-            }
+        }
         stage('Artifacts') {
             steps { 
                 script {
